@@ -9,18 +9,22 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import java.text.AttributedCharacterIterator;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Stack;
 
 public class GameScreen extends View {
 
     private MazeSquareComponent[][] mazeSquareComponents;
 
     // Constant that define the maze size
-    private static final int LINES_QUANTITY = 10;
-    private static final int CULUMNS_QUANTITY = 7;
-    private static final float SEPARATOR_SIZE = 4;
+    private static final int LINES_QUANTITY = 12;
+    private static final int CULUMNS_QUANTITY = 8;
+    private static final float SEPARATOR_SIZE = 8;
 
     private float squareSize, verticalMargin, horizontalMargin;
+
+    private Random rand;
 
     private Paint separator;
 
@@ -30,6 +34,8 @@ public class GameScreen extends View {
         separator = new Paint();
         separator.setColor(Color.BLACK);
         separator.setStrokeWidth(SEPARATOR_SIZE);
+
+        rand = new Random();
 
         buildMazeScreen();
     }
@@ -58,7 +64,7 @@ public class GameScreen extends View {
         //super.onDraw((canvas));
 
         // Background color
-        canvas.drawColor(Color.GREEN);
+        canvas.drawColor(Color.WHITE);
 
         // Values to the canvas
         int canvasWidth = getWidth();
@@ -75,14 +81,6 @@ public class GameScreen extends View {
 
         canvas.translate(horizontalMargin, verticalMargin);
 
-        /*for(int i=0 ; i<LINES_QUANTITY ; i++){
-            for(int j = 0; j<CULUMNS_QUANTITY ; j++){
-                if(mazeSquareComponents[i][j].topLine){
-                    canvas.drawLine(i*squareSize,j*squareSize, (i+1)*squareSize, j*squareSize, separator);
-                }
-            }
-        }*/
-
         drawCanvas(canvas, squareSize);
     }
 
@@ -92,22 +90,22 @@ public class GameScreen extends View {
             for(int j = 0; j<LINES_QUANTITY ; j++){
 
                 // Top line separator is present
-                if(mazeSquareComponents[j][i].topLine){
+                if(mazeSquareComponents[i][j].topSeparator){
                     canvas.drawLine(i*squareSize,j*squareSize, (i+1)*squareSize, j*squareSize, separator);
                 }
 
                 // Bottom line separator is present
-                if(mazeSquareComponents[j][i].bottomLine){
+                if(mazeSquareComponents[i][j].bottomSeparator){
                     canvas.drawLine(i*squareSize,(j+1)*squareSize, (i+1)*squareSize, (j+1)*squareSize, separator);
                 }
 
                 // Right line separator is present
-                if(mazeSquareComponents[j][i].rightLine){
+                if(mazeSquareComponents[i][j].rightSeparator){
                     canvas.drawLine((i+1)*squareSize,j*squareSize, (i+1)*squareSize, (j+1)*squareSize, separator);
                 }
 
                 // Left line separator is present
-                if(mazeSquareComponents[j][i].leftLine){
+                if(mazeSquareComponents[i][j].leftSeparator){
                     canvas.drawLine(i*squareSize,j*squareSize, i*squareSize, (j+1)*squareSize, separator);
                 }
             }
@@ -115,29 +113,133 @@ public class GameScreen extends View {
     }
 
     private void buildMazeScreen(){
-        mazeSquareComponents = new MazeSquareComponent[LINES_QUANTITY][CULUMNS_QUANTITY];
 
-        for(int i=0 ; i<LINES_QUANTITY ; i++){
-            for(int j = 0; j<CULUMNS_QUANTITY ; j++){
+        mazeSquareComponents = new MazeSquareComponent[CULUMNS_QUANTITY][LINES_QUANTITY];
+
+        for(int i=0 ; i<CULUMNS_QUANTITY ; i++){
+            for(int j = 0; j<LINES_QUANTITY ; j++){
                 mazeSquareComponents[i][j] = new MazeSquareComponent(i,j);
             }
         }
+
+        backTrackingToGenerateRandomMaze();
+    }
+
+    // Backtracking by Cadinho
+    private void backTrackingToGenerateRandomMaze(){
+
+        // User for backtracking
+        Stack<MazeSquareComponent> backtrackingStack = new Stack<>();
+
+        MazeSquareComponent currentPosition;
+        MazeSquareComponent nextPosition;
+
+        // First position
+        currentPosition = mazeSquareComponents[0][0];
+        currentPosition.alreadyVisited = true;
+
+        do{
+            nextPosition = getNextPosition(currentPosition);
+
+            if(nextPosition!=null){
+                removeSeparator(currentPosition, nextPosition);
+
+                backtrackingStack.push(currentPosition);
+
+                currentPosition = nextPosition;
+
+                currentPosition.alreadyVisited = true;
+            } else {
+                currentPosition = backtrackingStack.pop();
+            }
+        } while(!backtrackingStack.empty());
+    }
+
+    private void removeSeparator(MazeSquareComponent currentPosition, MazeSquareComponent nextPosition){
+
+        // If the next element is above
+        if((currentPosition.columnIndex == nextPosition.columnIndex) && (currentPosition.lineIndex == (nextPosition.lineIndex-1))){
+            currentPosition.bottomSeparator = false;
+            nextPosition.topSeparator = false;
+        }
+
+        // If the next element is below
+        if((currentPosition.columnIndex == nextPosition.columnIndex) && (currentPosition.lineIndex == (nextPosition.lineIndex+1))){
+            currentPosition.topSeparator = false;
+            nextPosition.bottomSeparator = false;
+        }
+
+        // If the next element is to the right
+        if((currentPosition.columnIndex == nextPosition.columnIndex+1) && (currentPosition.lineIndex == (nextPosition.lineIndex))){
+            currentPosition.leftSeparator = false;
+            nextPosition.rightSeparator = false;
+        }
+
+        // If the next element is to the left
+        if((currentPosition.columnIndex == nextPosition.columnIndex-1) && (currentPosition.lineIndex == (nextPosition.lineIndex))){
+            currentPosition.rightSeparator = false;
+            nextPosition.leftSeparator = false;
+        }
+    }
+
+    private MazeSquareComponent getNextPosition(MazeSquareComponent mazeSquareComponent){
+
+        ArrayList<MazeSquareComponent> squareBesides = new ArrayList<>();
+
+        // Check top
+        if(mazeSquareComponent.lineIndex >= 1){
+            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex-1].alreadyVisited)){
+                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex-1]);
+            }
+        }
+
+        // Check bottom
+        if(mazeSquareComponent.lineIndex < (LINES_QUANTITY-1)){
+            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1].alreadyVisited)){
+                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1]);
+            }
+        }
+
+        // Check right
+        if(mazeSquareComponent.columnIndex < (CULUMNS_QUANTITY-1)){
+            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex].alreadyVisited)){
+                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex]);
+            }
+        }
+
+        // Check left only if it isn't the first column
+        if(mazeSquareComponent.columnIndex>=1){
+            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex-1][mazeSquareComponent.lineIndex].alreadyVisited)){
+                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex-1][mazeSquareComponent.lineIndex]);
+            }
+        }
+
+        // If there is at least one element
+        if(squareBesides.size() > 0){
+            int randomElementIndex = rand.nextInt(squareBesides.size());
+
+            return squareBesides.get(randomElementIndex);
+        }
+
+        // If reached here, there is no element to return
+        return null;
     }
 
     // Unitary element of the maze
     private class MazeSquareComponent{
 
-        int columnsQuantity;
-        int linesQuantity;
-        boolean topLine = true;
-        boolean bottomLine = true;
-        boolean rightLine = true;
-        boolean leftLine = true;
+        int columnIndex;
+        int lineIndex;
+        boolean topSeparator = true;
+        boolean bottomSeparator = true;
+        boolean rightSeparator = true;
+        boolean leftSeparator = true;
+        boolean alreadyVisited = false;
 
-        public MazeSquareComponent(int lineIndex, int columnIndex){
+        public MazeSquareComponent(int columnIndex, int lineIndex){
 
-            this.linesQuantity = lineIndex;
-            this.columnsQuantity = columnIndex;
+            this.lineIndex = lineIndex;
+            this.columnIndex = columnIndex;
         }
     }
 }
