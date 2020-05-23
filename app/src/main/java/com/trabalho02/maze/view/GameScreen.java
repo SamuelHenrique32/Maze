@@ -1,26 +1,39 @@
 package com.trabalho02.maze.view;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+
+import com.trabalho02.maze.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
 
+import static android.app.PendingIntent.getActivity;
+
 public class GameScreen extends View {
 
     private MazeSquareComponent[][] mazeSquareComponents;
 
-    // Constant that define the maze size
+    // Constants
     private static final int LINES_QUANTITY = 12;
     private static final int CULUMNS_QUANTITY = 8;
     private static final float SEPARATOR_SIZE = 8;
+    private static final int INITIAL_LEVEL = 1;
+    private static final int FINAL_LEVEL = 3;
+
+    private int currentLevel = INITIAL_LEVEL;
 
     private float squareSize, verticalMargin, horizontalMargin;
 
@@ -32,6 +45,60 @@ public class GameScreen extends View {
     private Paint separatorPaintStyle;
     private Paint playerPaintStyle;
     private Paint exitPaintStyle;
+
+    private Utils utils;
+
+    // Directions
+    private enum MoveDirections{
+        TOP,
+        BOTTOM,
+        RIGHT,
+        LEFT
+    }
+
+    private void move(MoveDirections dir){
+
+        // Depending of the current direction
+        switch (dir){
+            case TOP:
+                // There is no top separator
+                if(!playerPosition.topSeparator){
+                    // Go one position to the top
+                    playerPosition = mazeSquareComponents[playerPosition.columnIndex][playerPosition.lineIndex-1];
+                }
+            break;
+
+            case BOTTOM:
+                // There is no bottom separator
+                if(!playerPosition.bottomSeparator) {
+                    // Go one position to the bottom
+                    playerPosition = mazeSquareComponents[playerPosition.columnIndex][playerPosition.lineIndex + 1];
+                }
+            break;
+
+            case RIGHT:
+                // There is no right separator
+                if(!playerPosition.rightSeparator) {
+                    // Go one position to the right
+                    playerPosition = mazeSquareComponents[playerPosition.columnIndex+1][playerPosition.lineIndex];
+                }
+            break;
+
+            case LEFT:
+                // There is no left separator
+                if(!playerPosition.leftSeparator) {
+                    // Go one position to the left
+                    playerPosition = mazeSquareComponents[playerPosition.columnIndex - 1][playerPosition.lineIndex];
+                }
+            break;
+        }
+
+        // Verify if the player founds the exit
+        verifyEndOfCurrentMaze();
+
+        // Set as old view
+        invalidate();
+    }
 
     public GameScreen(Context context, @Nullable AttributeSet attributes){
         super(context, attributes);
@@ -47,6 +114,8 @@ public class GameScreen extends View {
 
         exitPaintStyle = new Paint();
         exitPaintStyle.setColor(Color.BLUE);
+
+        utils = new Utils();
 
         buildMazeScreen();
     }
@@ -131,6 +200,30 @@ public class GameScreen extends View {
         canvas.drawRect((exitPosition.columnIndex*squareSize)+marginPlayerExit, (exitPosition.lineIndex*squareSize)+marginPlayerExit, ((exitPosition.columnIndex+1)*squareSize)-marginPlayerExit, ((exitPosition.lineIndex+1)*squareSize)-marginPlayerExit, exitPaintStyle);
     }
 
+    private void verifyEndOfCurrentMaze(){
+        // Go to the next level
+        if(playerPosition == exitPosition){
+
+            // Last level
+            if(currentLevel == FINAL_LEVEL){
+                utils.showAlert("Sucesso!", "Você Ganhou");
+            }
+            else{
+                utils.showAlert("Você Passou de Nível!", "Começar Nível " + this.currentLevel + "?");
+
+                buildMazeScreen();
+            }
+        }
+    }
+
+    public float calculatePlayerCenteredXPosition(){
+        return(horizontalMargin+(playerPosition.columnIndex+1/2f)*squareSize);
+    }
+
+    public float calculatePlayerCenteredYPosition(){
+        return(verticalMargin+(playerPosition.lineIndex+1/2f)*squareSize);
+    }
+
     private float calculateMarginForPlayerAndExit(){
         return squareSize/10;
     }
@@ -148,7 +241,7 @@ public class GameScreen extends View {
         // Defines the inicial position to the player
         playerPosition = mazeSquareComponents[0][0];
 
-        // Defines the exiit position
+        // Defines the exit position
         exitPosition = mazeSquareComponents[CULUMNS_QUANTITY-1][LINES_QUANTITY-1];
 
         backTrackingToGenerateRandomMaze();
@@ -271,4 +364,6 @@ public class GameScreen extends View {
             this.columnIndex = columnIndex;
         }
     }
+
+
 }
