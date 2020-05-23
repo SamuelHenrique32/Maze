@@ -26,16 +26,27 @@ public class GameScreen extends View {
 
     private Random rand;
 
-    private Paint separator;
+    private MazeSquareComponent playerPosition;
+    private MazeSquareComponent exitPosition;
+
+    private Paint separatorPaintStyle;
+    private Paint playerPaintStyle;
+    private Paint exitPaintStyle;
 
     public GameScreen(Context context, @Nullable AttributeSet attributes){
         super(context, attributes);
 
-        separator = new Paint();
-        separator.setColor(Color.BLACK);
-        separator.setStrokeWidth(SEPARATOR_SIZE);
+        separatorPaintStyle = new Paint();
+        separatorPaintStyle.setColor(Color.BLACK);
+        separatorPaintStyle.setStrokeWidth(SEPARATOR_SIZE);
 
         rand = new Random();
+
+        playerPaintStyle = new Paint();
+        playerPaintStyle.setColor(Color.RED);
+
+        exitPaintStyle = new Paint();
+        exitPaintStyle.setColor(Color.BLUE);
 
         buildMazeScreen();
     }
@@ -91,25 +102,37 @@ public class GameScreen extends View {
 
                 // Top line separator is present
                 if(mazeSquareComponents[i][j].topSeparator){
-                    canvas.drawLine(i*squareSize,j*squareSize, (i+1)*squareSize, j*squareSize, separator);
+                    canvas.drawLine(i*squareSize,j*squareSize, (i+1)*squareSize, j*squareSize, separatorPaintStyle);
                 }
 
                 // Bottom line separator is present
                 if(mazeSquareComponents[i][j].bottomSeparator){
-                    canvas.drawLine(i*squareSize,(j+1)*squareSize, (i+1)*squareSize, (j+1)*squareSize, separator);
+                    canvas.drawLine(i*squareSize,(j+1)*squareSize, (i+1)*squareSize, (j+1)*squareSize, separatorPaintStyle);
                 }
 
                 // Right line separator is present
                 if(mazeSquareComponents[i][j].rightSeparator){
-                    canvas.drawLine((i+1)*squareSize,j*squareSize, (i+1)*squareSize, (j+1)*squareSize, separator);
+                    canvas.drawLine((i+1)*squareSize,j*squareSize, (i+1)*squareSize, (j+1)*squareSize, separatorPaintStyle);
                 }
 
                 // Left line separator is present
                 if(mazeSquareComponents[i][j].leftSeparator){
-                    canvas.drawLine(i*squareSize,j*squareSize, i*squareSize, (j+1)*squareSize, separator);
+                    canvas.drawLine(i*squareSize,j*squareSize, i*squareSize, (j+1)*squareSize, separatorPaintStyle);
                 }
             }
         }
+
+        float marginPlayerExit = calculateMarginForPlayerAndExit();
+
+        // Shows the player
+        canvas.drawRect((playerPosition.columnIndex*squareSize)+marginPlayerExit, (playerPosition.lineIndex*squareSize)+marginPlayerExit, ((playerPosition.columnIndex+1)*squareSize)-marginPlayerExit, ((playerPosition.lineIndex+1)*squareSize)-marginPlayerExit, playerPaintStyle);
+
+        // Shows the exit
+        canvas.drawRect((exitPosition.columnIndex*squareSize)+marginPlayerExit, (exitPosition.lineIndex*squareSize)+marginPlayerExit, ((exitPosition.columnIndex+1)*squareSize)-marginPlayerExit, ((exitPosition.lineIndex+1)*squareSize)-marginPlayerExit, exitPaintStyle);
+    }
+
+    private float calculateMarginForPlayerAndExit(){
+        return squareSize/10;
     }
 
     private void buildMazeScreen(){
@@ -121,6 +144,12 @@ public class GameScreen extends View {
                 mazeSquareComponents[i][j] = new MazeSquareComponent(i,j);
             }
         }
+
+        // Defines the inicial position to the player
+        playerPosition = mazeSquareComponents[0][0];
+
+        // Defines the exiit position
+        exitPosition = mazeSquareComponents[CULUMNS_QUANTITY-1][LINES_QUANTITY-1];
 
         backTrackingToGenerateRandomMaze();
     }
