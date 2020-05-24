@@ -5,10 +5,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.trabalho02.maze.MainActivity;
 import com.trabalho02.maze.utils.Utils;
 
 import java.util.ArrayList;
@@ -19,11 +21,13 @@ import static android.app.PendingIntent.getActivity;
 
 public class GameScreen extends View {
 
+    private Context currentContext;
+
     private MazeSquareComponent[][] mazeSquareComponents;
 
     // Constants
-    private static final int INITIAL_QUANTITY_OF_LINES = 9;
-    private static final int INITIAL_QUANTITY_OF_COLUMNS = (INITIAL_QUANTITY_OF_LINES-3);
+    private static final int INITIAL_QUANTITY_OF_LINES = 8;
+    private static final int INITIAL_QUANTITY_OF_COLUMNS = 6;
     private static final float SEPARATOR_SIZE = 8;
     private static final int INITIAL_LEVEL = 1;
     private static final int FINAL_LEVEL = 3;
@@ -43,6 +47,33 @@ public class GameScreen extends View {
     private Paint exitPaintStyle;
 
     private Utils utils;
+
+    public GameScreen(Context context, @Nullable AttributeSet attributes){
+
+        super(context);
+
+        this.currentContext = context;
+
+        rand = new Random();
+
+        utils = new Utils();
+
+        separatorPaintStyle = new Paint();
+        separatorPaintStyle.setColor(Color.BLACK);
+        separatorPaintStyle.setStrokeWidth(SEPARATOR_SIZE);
+
+        playerPaintStyle = new Paint();
+        playerPaintStyle.setColor(Color.RED);
+
+        exitPaintStyle = new Paint();
+        exitPaintStyle.setColor(Color.BLUE);
+
+        currentLevel = INITIAL_LEVEL;
+        currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
+        currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
+
+        buildMazeScreen();
+    }
 
     // Directions
     private enum MoveDirections{
@@ -96,30 +127,6 @@ public class GameScreen extends View {
         invalidate();
     }
 
-    public GameScreen(Context context, @Nullable AttributeSet attributes){
-        super(context, attributes);
-
-        rand = new Random();
-
-        utils = new Utils();
-
-        separatorPaintStyle = new Paint();
-        separatorPaintStyle.setColor(Color.BLACK);
-        separatorPaintStyle.setStrokeWidth(SEPARATOR_SIZE);
-
-        playerPaintStyle = new Paint();
-        playerPaintStyle.setColor(Color.RED);
-
-        exitPaintStyle = new Paint();
-        exitPaintStyle.setColor(Color.BLUE);
-
-        currentLevel = INITIAL_LEVEL;
-        currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
-        currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
-
-        buildMazeScreen();
-    }
-
     private boolean updateLevel(){
 
         if(currentLevel<FINAL_LEVEL){
@@ -128,12 +135,22 @@ public class GameScreen extends View {
 
             currentLinesQuantity+=2;
 
-            currentColumnsQuantity = (currentLinesQuantity-3);
+            currentColumnsQuantity++;
 
             return true;
         }
 
         return false;
+    }
+
+    private void restartMaze(){
+        currentLevel = INITIAL_LEVEL;
+
+        currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
+
+        currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
+
+        buildMazeScreen();
     }
 
     private int calculateSquareSize(int canvasWidth, int canvasHeight){
@@ -222,11 +239,13 @@ public class GameScreen extends View {
 
             if(updateLevel()){
 
-                utils.showAlert(Utils.alertType.NEXT_LEVEL, currentLevel);
+                utils.showAlert(Utils.alertType.NEXT_LEVEL, currentLevel, this.currentContext);
 
                 buildMazeScreen();
             } else {
-                utils.showAlert(Utils.alertType.LAST_LEVEL, currentLevel);
+                utils.showAlert(Utils.alertType.LAST_LEVEL, currentLevel, this.currentContext);
+
+                restartMaze();
             }
         }
     }

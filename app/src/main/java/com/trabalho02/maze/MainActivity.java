@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import com.trabalho02.maze.view.GameScreen;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -14,5 +16,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        GameScreen gameScreen = new GameScreen(MainActivity.this, null);
     }
 }
