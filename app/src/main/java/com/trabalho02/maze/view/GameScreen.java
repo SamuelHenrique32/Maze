@@ -1,16 +1,11 @@
 package com.trabalho02.maze.view;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -27,13 +22,14 @@ public class GameScreen extends View {
     private MazeSquareComponent[][] mazeSquareComponents;
 
     // Constants
-    private static final int LINES_QUANTITY = 12;
-    private static final int CULUMNS_QUANTITY = 8;
+    private static final int INITIAL_QUANTITY_OF_LINES = 9;
+    private static final int INITIAL_QUANTITY_OF_COLUMNS = (INITIAL_QUANTITY_OF_LINES-3);
     private static final float SEPARATOR_SIZE = 8;
     private static final int INITIAL_LEVEL = 1;
     private static final int FINAL_LEVEL = 3;
 
-    private int currentLevel = INITIAL_LEVEL;
+    private int currentLevel;
+    private int currentLinesQuantity, currentColumnsQuantity;
 
     private float squareSize, verticalMargin, horizontalMargin;
 
@@ -103,11 +99,13 @@ public class GameScreen extends View {
     public GameScreen(Context context, @Nullable AttributeSet attributes){
         super(context, attributes);
 
+        rand = new Random();
+
+        utils = new Utils();
+
         separatorPaintStyle = new Paint();
         separatorPaintStyle.setColor(Color.BLACK);
         separatorPaintStyle.setStrokeWidth(SEPARATOR_SIZE);
-
-        rand = new Random();
 
         playerPaintStyle = new Paint();
         playerPaintStyle.setColor(Color.RED);
@@ -115,27 +113,45 @@ public class GameScreen extends View {
         exitPaintStyle = new Paint();
         exitPaintStyle.setColor(Color.BLUE);
 
-        utils = new Utils();
+        currentLevel = INITIAL_LEVEL;
+        currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
+        currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
 
         buildMazeScreen();
     }
 
+    private boolean updateLevel(){
+
+        if(currentLevel<FINAL_LEVEL){
+
+            currentLevel++;
+
+            currentLinesQuantity+=2;
+
+            currentColumnsQuantity = (currentLinesQuantity-3);
+
+            return true;
+        }
+
+        return false;
+    }
+
     private int calculateSquareSize(int canvasWidth, int canvasHeight){
 
-        if((canvasWidth/canvasHeight) < (CULUMNS_QUANTITY/LINES_QUANTITY)){
-            return(canvasWidth/(CULUMNS_QUANTITY + 1));
+        if((canvasWidth/canvasHeight) < (currentColumnsQuantity / currentLinesQuantity)){
+            return(canvasWidth/(currentColumnsQuantity + 1));
         }
 
         // If reached here, first statement is false
-        return(canvasHeight/(LINES_QUANTITY + 1));
+        return(canvasHeight/(currentLinesQuantity + 1));
     }
 
     private float calculateHorizontalMargin(int canvasWidth, float squareSize){
-        return((canvasWidth-(CULUMNS_QUANTITY*squareSize))/2);
+        return((canvasWidth-(currentColumnsQuantity *squareSize))/2);
     }
 
     private float calculateVerticalMargin(int canvasHeight, float squareSize){
-        return((canvasHeight-(LINES_QUANTITY*squareSize))/2);
+        return((canvasHeight-(currentLinesQuantity *squareSize))/2);
     }
 
     @Override
@@ -166,8 +182,8 @@ public class GameScreen extends View {
 
     private void drawCanvas(Canvas canvas, float squareSize){
 
-        for(int i=0 ; i<CULUMNS_QUANTITY ; i++){
-            for(int j = 0; j<LINES_QUANTITY ; j++){
+        for(int i = 0; i< currentColumnsQuantity; i++){
+            for(int j = 0; j< currentLinesQuantity; j++){
 
                 // Top line separator is present
                 if(mazeSquareComponents[i][j].topSeparator){
@@ -204,14 +220,13 @@ public class GameScreen extends View {
         // Go to the next level
         if(playerPosition == exitPosition){
 
-            // Last level
-            if(currentLevel == FINAL_LEVEL){
-                utils.showAlert("Sucesso!", "Você Ganhou");
-            }
-            else{
-                utils.showAlert("Você Passou de Nível!", "Começar Nível " + this.currentLevel + "?");
+            if(updateLevel()){
+
+                utils.showAlert(Utils.alertType.NEXT_LEVEL, currentLevel);
 
                 buildMazeScreen();
+            } else {
+                utils.showAlert(Utils.alertType.LAST_LEVEL, currentLevel);
             }
         }
     }
@@ -230,10 +245,10 @@ public class GameScreen extends View {
 
     private void buildMazeScreen(){
 
-        mazeSquareComponents = new MazeSquareComponent[CULUMNS_QUANTITY][LINES_QUANTITY];
+        mazeSquareComponents = new MazeSquareComponent[currentColumnsQuantity][currentLinesQuantity];
 
-        for(int i=0 ; i<CULUMNS_QUANTITY ; i++){
-            for(int j = 0; j<LINES_QUANTITY ; j++){
+        for(int i = 0; i< currentColumnsQuantity; i++){
+            for(int j = 0; j< currentLinesQuantity; j++){
                 mazeSquareComponents[i][j] = new MazeSquareComponent(i,j);
             }
         }
@@ -242,7 +257,7 @@ public class GameScreen extends View {
         playerPosition = mazeSquareComponents[0][0];
 
         // Defines the exit position
-        exitPosition = mazeSquareComponents[CULUMNS_QUANTITY-1][LINES_QUANTITY-1];
+        exitPosition = mazeSquareComponents[currentColumnsQuantity -1][currentLinesQuantity -1];
 
         backTrackingToGenerateRandomMaze();
     }
@@ -316,14 +331,14 @@ public class GameScreen extends View {
         }
 
         // Check bottom
-        if(mazeSquareComponent.lineIndex < (LINES_QUANTITY-1)){
+        if(mazeSquareComponent.lineIndex < (currentLinesQuantity -1)){
             if(!(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1].alreadyVisited)){
                 squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1]);
             }
         }
 
         // Check right
-        if(mazeSquareComponent.columnIndex < (CULUMNS_QUANTITY-1)){
+        if(mazeSquareComponent.columnIndex < (currentColumnsQuantity -1)){
             if(!(mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex].alreadyVisited)){
                 squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex]);
             }
@@ -364,6 +379,4 @@ public class GameScreen extends View {
             this.columnIndex = columnIndex;
         }
     }
-
-
 }
