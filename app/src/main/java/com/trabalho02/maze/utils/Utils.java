@@ -6,8 +6,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
-import static android.app.PendingIntent.getActivity;
-
 public class Utils<functionReturnValue> extends AppCompatActivity {
 
     private Context currentContext;
@@ -45,11 +43,11 @@ public class Utils<functionReturnValue> extends AppCompatActivity {
         }
         else if(type == alertType.LAST_LEVEL){
 
-            alertDialog.setTitle("Parabéns!");
+            alertDialog.setTitle("Parabéns! Você venceu");
 
-            alertDialog.setMessage("Você Venceu");
+            alertDialog.setMessage("Recomeçar?");
 
-            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Sim", new DialogInterface.OnClickListener() {
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                 }

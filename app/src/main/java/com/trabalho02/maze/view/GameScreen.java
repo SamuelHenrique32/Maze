@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.trabalho02.maze.MainActivity;
+import com.trabalho02.maze.R;
 import com.trabalho02.maze.utils.Utils;
 
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class GameScreen extends View {
     private static final int INITIAL_QUANTITY_OF_COLUMNS = 6;
     private static final float SEPARATOR_SIZE = 8;
     private static final int INITIAL_LEVEL = 1;
-    private static final int FINAL_LEVEL = 3;
+    private static final int FINAL_LEVEL = 5;
 
     private int currentLevel;
     private int currentLinesQuantity, currentColumnsQuantity;
@@ -47,6 +49,8 @@ public class GameScreen extends View {
     private Paint exitPaintStyle;
 
     private Utils utils;
+
+    private MediaPlayer mp;
 
     public GameScreen(Context context, @Nullable AttributeSet attributes){
 
@@ -71,6 +75,9 @@ public class GameScreen extends View {
         currentLevel = INITIAL_LEVEL;
         currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
         currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
+
+        mp = MediaPlayer.create(currentContext, R.raw. start );
+        mp.start();
 
         buildMazeScreen();
     }
@@ -237,6 +244,9 @@ public class GameScreen extends View {
         // Go to the next level
         if(playerPosition == exitPosition){
 
+            mp = MediaPlayer.create(currentContext, R.raw. found_exit );
+            mp.start();
+
             if(updateLevel()){
 
                 utils.showAlert(Utils.alertType.NEXT_LEVEL, currentLevel, this.currentContext);
@@ -279,6 +289,7 @@ public class GameScreen extends View {
         exitPosition = mazeSquareComponents[currentColumnsQuantity -1][currentLinesQuantity -1];
 
         backTrackingToGenerateRandomMaze();
+
     }
 
     // Backtracking by Cadinho
