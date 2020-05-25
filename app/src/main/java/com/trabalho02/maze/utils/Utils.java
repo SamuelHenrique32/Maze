@@ -6,7 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class Utils<functionReturnValue> extends AppCompatActivity {
+public class Utils extends AppCompatActivity {
 
     private Context currentContext;
 
