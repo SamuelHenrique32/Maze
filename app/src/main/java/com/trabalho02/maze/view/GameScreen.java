@@ -83,14 +83,14 @@ public class GameScreen extends View {
     }
 
     // Directions
-    private enum MoveDirections{
+    public enum MoveDirections{
         TOP,
         BOTTOM,
         RIGHT,
         LEFT
     }
 
-    private void move(MoveDirections dir){
+    public void move(MoveDirections dir){
 
         // Depending of the current direction
         switch (dir){
