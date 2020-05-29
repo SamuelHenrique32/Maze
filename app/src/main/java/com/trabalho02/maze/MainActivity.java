@@ -28,6 +28,10 @@ public class MainActivity extends AppCompatActivity {
     private Sensor giroscopio;
     private SensorEventListener listener;
     GameScreen gameScreen;
+    private static final int QUANTITY_SENSOR_READS = 20;
+    private int currentRead = 0;
+
+    int i=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        giroscopio = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        giroscopio = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         if (giroscopio == null) {
             Toast.makeText(this, "O dispositivo não possui giroscópio!", Toast.LENGTH_LONG).show();
@@ -48,39 +52,44 @@ public class MainActivity extends AppCompatActivity {
 
         //alteracao
         listener = new SensorEventListener() {
+
             @Override
             public void onSensorChanged(SensorEvent event) {
+                if(currentRead>=QUANTITY_SENSOR_READS) {
+                    if(event.values[0] > -7f && event.values[0] < -3f){
+                        gameScreen.move(GameScreen.MoveDirections.RIGHT);
+                    }else if(event.values[0] < 7f && event.values[0] > 3f){
+                        gameScreen.move(GameScreen.MoveDirections.LEFT);
+                    }
 
-                if(event.values[1] > 0.7f){
-                    //virar direita
-                    gameScreen.move(GameScreen.MoveDirections.RIGHT);
-                }else if(event.values[1] < -0.7f){
-                    //virar esquerda
-                    gameScreen.move(GameScreen.MoveDirections.LEFT);
-                }
+                    if(event.values[1] < 7f && event.values[1] > 3f){
+                        gameScreen.move(GameScreen.MoveDirections.BOTTOM);
+                    }else if(event.values[1] > -7f && event.values[1] < -3f){
+                        gameScreen.move(GameScreen.MoveDirections.TOP);
+                    }
 
-                if(event.values[0] > 0.7f){
-                    //virar cima
-                    gameScreen.move(GameScreen.MoveDirections.TOP);
-                }else if(event.values[0] < -0.7f){
-                    //virar baixo
-                    gameScreen.move(GameScreen.MoveDirections.BOTTOM);
+                    System.out.println(i);
+                    i++;
+
+                    currentRead = 0;
+                } else{
+                    currentRead++;
                 }
             }
+
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
             }
         };
-
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        sensorManager.registerListener(listener, giroscopio, SensorManager.SENSOR_DELAY_UI);
+        sensorManager.registerListener(listener, giroscopio, 200000);
     }
 
     @Override

@@ -202,6 +202,8 @@ public class GameScreen extends View {
         canvas.translate(horizontalMargin, verticalMargin);
 
         drawCanvas(canvas, squareSize);
+
+        invalidate();
     }
 
     private void drawCanvas(Canvas canvas, float squareSize){
