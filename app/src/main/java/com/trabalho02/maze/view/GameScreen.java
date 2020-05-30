@@ -68,7 +68,7 @@ public class GameScreen extends View {
         LEFT
     }
 
-    public void move(MoveDirections dir){
+    public boolean move(MoveDirections dir){
 
         // Depending of the current direction
         switch (dir){
@@ -78,6 +78,8 @@ public class GameScreen extends View {
                     // Go one position to the top
                     Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex][Store.playerPosition.lineIndex-1];
                     //System.out.println("Move to the top");
+                } else {
+                    return false;
                 }
             break;
 
@@ -87,6 +89,8 @@ public class GameScreen extends View {
                     // Go one position to the bottom
                     Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex][Store.playerPosition.lineIndex + 1];
                     //System.out.println("Move to the bottom");
+                } else {
+                    return false;
                 }
             break;
 
@@ -96,6 +100,8 @@ public class GameScreen extends View {
                     // Go one position to the right
                     Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex+1][Store.playerPosition.lineIndex];
                     //System.out.println("Move to the right");
+                } else {
+                    return false;
                 }
             break;
 
@@ -105,6 +111,8 @@ public class GameScreen extends View {
                     // Go one position to the left
                     Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex - 1][Store.playerPosition.lineIndex];
                     //System.out.println("Move to the left");
+                } else {
+                    return false;
                 }
             break;
         }
@@ -114,6 +122,9 @@ public class GameScreen extends View {
 
         // Set as old view
         invalidate();
+
+        // If reached here, result is true
+        return true;
     }
 
     private boolean updateLevel(){
