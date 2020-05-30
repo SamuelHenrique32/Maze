@@ -6,26 +6,16 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
-
 import androidx.annotation.Nullable;
-
-import com.trabalho02.maze.MainActivity;
+import com.trabalho02.maze.Store;
 import com.trabalho02.maze.R;
 import com.trabalho02.maze.utils.Utils;
-
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
 
-import static android.app.PendingIntent.getActivity;
-
 public class GameScreen extends View {
-
-    private Context currentContext;
-
-    private MazeSquareComponent[][] mazeSquareComponents;
 
     // Constants
     private static final int INITIAL_QUANTITY_OF_LINES = 8;
@@ -34,23 +24,11 @@ public class GameScreen extends View {
     private static final int INITIAL_LEVEL = 1;
     private static final int FINAL_LEVEL = 5;
 
-    private int currentLevel;
-    private int currentLinesQuantity, currentColumnsQuantity;
-
-    private float squareSize, verticalMargin, horizontalMargin;
+    private Context currentContext;
 
     private Random rand;
 
-    private MazeSquareComponent playerPosition;
-    private MazeSquareComponent exitPosition;
-
-    private Paint separatorPaintStyle;
-    private Paint playerPaintStyle;
-    private Paint exitPaintStyle;
-
     private Utils utils;
-
-    private MediaPlayer mp;
 
     public GameScreen(Context context, @Nullable AttributeSet attributes){
 
@@ -62,22 +40,22 @@ public class GameScreen extends View {
 
         utils = new Utils();
 
-        separatorPaintStyle = new Paint();
-        separatorPaintStyle.setColor(Color.BLACK);
-        separatorPaintStyle.setStrokeWidth(SEPARATOR_SIZE);
+        Store.separatorPaintStyle = new Paint();
+        Store.separatorPaintStyle.setColor(Color.BLACK);
+        Store.separatorPaintStyle.setStrokeWidth(SEPARATOR_SIZE);
 
-        playerPaintStyle = new Paint();
-        playerPaintStyle.setColor(Color.RED);
+        Store.playerPaintStyle = new Paint();
+        Store.playerPaintStyle.setColor(Color.RED);
 
-        exitPaintStyle = new Paint();
-        exitPaintStyle.setColor(Color.BLUE);
+        Store.exitPaintStyle = new Paint();
+        Store.exitPaintStyle.setColor(Color.BLUE);
 
-        currentLevel = INITIAL_LEVEL;
-        currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
-        currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
+        Store.currentLevel = INITIAL_LEVEL;
+        Store.currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
+        Store.currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
 
-        mp = MediaPlayer.create(currentContext, R.raw. start );
-        mp.start();
+        Store.mp = MediaPlayer.create(currentContext, R.raw. start );
+        Store.mp.start();
 
         buildMazeScreen();
     }
@@ -96,33 +74,37 @@ public class GameScreen extends View {
         switch (dir){
             case TOP:
                 // There is no top separator
-                if(!playerPosition.topSeparator){
+                if(!Store.playerPosition.topSeparator){
                     // Go one position to the top
-                    playerPosition = mazeSquareComponents[playerPosition.columnIndex][playerPosition.lineIndex-1];
+                    Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex][Store.playerPosition.lineIndex-1];
+                    //System.out.println("Move to the top");
                 }
             break;
 
             case BOTTOM:
                 // There is no bottom separator
-                if(!playerPosition.bottomSeparator) {
+                if(!Store.playerPosition.bottomSeparator) {
                     // Go one position to the bottom
-                    playerPosition = mazeSquareComponents[playerPosition.columnIndex][playerPosition.lineIndex + 1];
+                    Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex][Store.playerPosition.lineIndex + 1];
+                    //System.out.println("Move to the bottom");
                 }
             break;
 
             case RIGHT:
                 // There is no right separator
-                if(!playerPosition.rightSeparator) {
+                if(!Store.playerPosition.rightSeparator) {
                     // Go one position to the right
-                    playerPosition = mazeSquareComponents[playerPosition.columnIndex+1][playerPosition.lineIndex];
+                    Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex+1][Store.playerPosition.lineIndex];
+                    //System.out.println("Move to the right");
                 }
             break;
 
             case LEFT:
                 // There is no left separator
-                if(!playerPosition.leftSeparator) {
+                if(!Store.playerPosition.leftSeparator) {
                     // Go one position to the left
-                    playerPosition = mazeSquareComponents[playerPosition.columnIndex - 1][playerPosition.lineIndex];
+                    Store.playerPosition = Store.mazeSquareComponents[Store.playerPosition.columnIndex - 1][Store.playerPosition.lineIndex];
+                    //System.out.println("Move to the left");
                 }
             break;
         }
@@ -136,13 +118,13 @@ public class GameScreen extends View {
 
     private boolean updateLevel(){
 
-        if(currentLevel<FINAL_LEVEL){
+        if(Store.currentLevel<FINAL_LEVEL){
 
-            currentLevel++;
+            Store.currentLevel++;
 
-            currentLinesQuantity+=2;
+            Store.currentLinesQuantity+=2;
 
-            currentColumnsQuantity++;
+            Store.currentColumnsQuantity++;
 
             return true;
         }
@@ -151,37 +133,35 @@ public class GameScreen extends View {
     }
 
     private void restartMaze(){
-        currentLevel = INITIAL_LEVEL;
+        Store.currentLevel = INITIAL_LEVEL;
 
-        currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
+        Store.currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;
 
-        currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
+        Store.currentColumnsQuantity = INITIAL_QUANTITY_OF_COLUMNS;
 
         buildMazeScreen();
     }
 
     private int calculateSquareSize(int canvasWidth, int canvasHeight){
 
-        if((canvasWidth/canvasHeight) < (currentColumnsQuantity / currentLinesQuantity)){
-            return(canvasWidth/(currentColumnsQuantity + 1));
+        if((canvasWidth/canvasHeight) < (Store.currentColumnsQuantity / Store.currentLinesQuantity)){
+            return(canvasWidth/(Store.currentColumnsQuantity + 1));
         }
 
         // If reached here, first statement is false
-        return(canvasHeight/(currentLinesQuantity + 1));
+        return(canvasHeight/(Store.currentLinesQuantity + 1));
     }
 
     private float calculateHorizontalMargin(int canvasWidth, float squareSize){
-        return((canvasWidth-(currentColumnsQuantity *squareSize))/2);
+        return((canvasWidth-(Store.currentColumnsQuantity *squareSize))/2);
     }
 
     private float calculateVerticalMargin(int canvasHeight, float squareSize){
-        return((canvasHeight-(currentLinesQuantity *squareSize))/2);
+        return((canvasHeight-(Store.currentLinesQuantity *squareSize))/2);
     }
 
     @Override
     protected void onDraw(Canvas canvas){
-
-        //super.onDraw((canvas));
 
         // Background color
         canvas.drawColor(Color.WHITE);
@@ -191,44 +171,44 @@ public class GameScreen extends View {
         int canvasHeight = getHeight();
 
         // Calculates the square size
-        squareSize = calculateSquareSize(canvasWidth, canvasHeight);
+        Store.squareSize = calculateSquareSize(canvasWidth, canvasHeight);
 
         // Calculates horizontal margin
-        horizontalMargin = calculateHorizontalMargin(canvasWidth, squareSize);
+        Store.horizontalMargin = calculateHorizontalMargin(canvasWidth, Store.squareSize);
 
         // Calculates vertical margin
-        verticalMargin  = calculateVerticalMargin(canvasHeight, squareSize);
+        Store.verticalMargin  = calculateVerticalMargin(canvasHeight, Store.squareSize);
 
-        canvas.translate(horizontalMargin, verticalMargin);
+        canvas.translate(Store.horizontalMargin, Store.verticalMargin);
 
-        drawCanvas(canvas, squareSize);
+        drawCanvas(canvas, Store.squareSize);
 
         invalidate();
     }
 
     private void drawCanvas(Canvas canvas, float squareSize){
 
-        for(int i = 0; i< currentColumnsQuantity; i++){
-            for(int j = 0; j< currentLinesQuantity; j++){
+        for(int i = 0; i< Store.currentColumnsQuantity; i++){
+            for(int j = 0; j< Store.currentLinesQuantity; j++){
 
                 // Top line separator is present
-                if(mazeSquareComponents[i][j].topSeparator){
-                    canvas.drawLine(i*squareSize,j*squareSize, (i+1)*squareSize, j*squareSize, separatorPaintStyle);
+                if(Store.mazeSquareComponents[i][j].topSeparator){
+                    canvas.drawLine(i*squareSize,j*squareSize, (i+1)*squareSize, j*squareSize, Store.separatorPaintStyle);
                 }
 
                 // Bottom line separator is present
-                if(mazeSquareComponents[i][j].bottomSeparator){
-                    canvas.drawLine(i*squareSize,(j+1)*squareSize, (i+1)*squareSize, (j+1)*squareSize, separatorPaintStyle);
+                if(Store.mazeSquareComponents[i][j].bottomSeparator){
+                    canvas.drawLine(i*squareSize,(j+1)*squareSize, (i+1)*squareSize, (j+1)*squareSize, Store.separatorPaintStyle);
                 }
 
                 // Right line separator is present
-                if(mazeSquareComponents[i][j].rightSeparator){
-                    canvas.drawLine((i+1)*squareSize,j*squareSize, (i+1)*squareSize, (j+1)*squareSize, separatorPaintStyle);
+                if(Store.mazeSquareComponents[i][j].rightSeparator){
+                    canvas.drawLine((i+1)*squareSize,j*squareSize, (i+1)*squareSize, (j+1)*squareSize, Store.separatorPaintStyle);
                 }
 
                 // Left line separator is present
-                if(mazeSquareComponents[i][j].leftSeparator){
-                    canvas.drawLine(i*squareSize,j*squareSize, i*squareSize, (j+1)*squareSize, separatorPaintStyle);
+                if(Store.mazeSquareComponents[i][j].leftSeparator){
+                    canvas.drawLine(i*squareSize,j*squareSize, i*squareSize, (j+1)*squareSize, Store.separatorPaintStyle);
                 }
             }
         }
@@ -236,26 +216,26 @@ public class GameScreen extends View {
         float marginPlayerExit = calculateMarginForPlayerAndExit();
 
         // Shows the player
-        canvas.drawRect((playerPosition.columnIndex*squareSize)+marginPlayerExit, (playerPosition.lineIndex*squareSize)+marginPlayerExit, ((playerPosition.columnIndex+1)*squareSize)-marginPlayerExit, ((playerPosition.lineIndex+1)*squareSize)-marginPlayerExit, playerPaintStyle);
+        canvas.drawRect((Store.playerPosition.columnIndex*squareSize)+marginPlayerExit, (Store.playerPosition.lineIndex*squareSize)+marginPlayerExit, ((Store.playerPosition.columnIndex+1)*squareSize)-marginPlayerExit, ((Store.playerPosition.lineIndex+1)*squareSize)-marginPlayerExit, Store.playerPaintStyle);
 
         // Shows the exit
-        canvas.drawRect((exitPosition.columnIndex*squareSize)+marginPlayerExit, (exitPosition.lineIndex*squareSize)+marginPlayerExit, ((exitPosition.columnIndex+1)*squareSize)-marginPlayerExit, ((exitPosition.lineIndex+1)*squareSize)-marginPlayerExit, exitPaintStyle);
+        canvas.drawRect((Store.exitPosition.columnIndex*squareSize)+marginPlayerExit, (Store.exitPosition.lineIndex*squareSize)+marginPlayerExit, ((Store.exitPosition.columnIndex+1)*squareSize)-marginPlayerExit, ((Store.exitPosition.lineIndex+1)*squareSize)-marginPlayerExit, Store.exitPaintStyle);
     }
 
     private void verifyEndOfCurrentMaze(){
         // Go to the next level
-        if(playerPosition == exitPosition){
+        if(Store.playerPosition == Store.exitPosition){
 
-            mp = MediaPlayer.create(currentContext, R.raw. found_exit );
-            mp.start();
+            Store.mp = MediaPlayer.create(currentContext, R.raw. found_exit );
+            Store.mp.start();
 
             if(updateLevel()){
 
-                utils.showAlert(Utils.alertType.NEXT_LEVEL, currentLevel, this.currentContext);
+                utils.showAlert(Utils.alertType.NEXT_LEVEL, Store.currentLevel, this.currentContext);
 
                 buildMazeScreen();
             } else {
-                utils.showAlert(Utils.alertType.LAST_LEVEL, currentLevel, this.currentContext);
+                utils.showAlert(Utils.alertType.LAST_LEVEL, Store.currentLevel, this.currentContext);
 
                 restartMaze();
             }
@@ -263,32 +243,32 @@ public class GameScreen extends View {
     }
 
     public float calculatePlayerCenteredXPosition(){
-        return(horizontalMargin+(playerPosition.columnIndex+1/2f)*squareSize);
+        return(Store.horizontalMargin+(Store.playerPosition.columnIndex+1/2f)* Store.squareSize);
     }
 
     public float calculatePlayerCenteredYPosition(){
-        return(verticalMargin+(playerPosition.lineIndex+1/2f)*squareSize);
+        return(Store.verticalMargin+(Store.playerPosition.lineIndex+1/2f)* Store.squareSize);
     }
 
     private float calculateMarginForPlayerAndExit(){
-        return squareSize/10;
+        return Store.squareSize/10;
     }
 
     private void buildMazeScreen(){
 
-        mazeSquareComponents = new MazeSquareComponent[currentColumnsQuantity][currentLinesQuantity];
+        Store.mazeSquareComponents = new MazeSquareComponent[Store.currentColumnsQuantity][Store.currentLinesQuantity];
 
-        for(int i = 0; i< currentColumnsQuantity; i++){
-            for(int j = 0; j< currentLinesQuantity; j++){
-                mazeSquareComponents[i][j] = new MazeSquareComponent(i,j);
+        for(int i = 0; i< Store.currentColumnsQuantity; i++){
+            for(int j = 0; j< Store.currentLinesQuantity; j++){
+                Store.mazeSquareComponents[i][j] = new MazeSquareComponent(i,j);
             }
         }
 
         // Defines the inicial position to the player
-        playerPosition = mazeSquareComponents[0][0];
+        Store.playerPosition = Store.mazeSquareComponents[0][0];
 
         // Defines the exit position
-        exitPosition = mazeSquareComponents[currentColumnsQuantity -1][currentLinesQuantity -1];
+        Store.exitPosition = Store.mazeSquareComponents[Store.currentColumnsQuantity -1][Store.currentLinesQuantity -1];
 
         backTrackingToGenerateRandomMaze();
 
@@ -304,7 +284,7 @@ public class GameScreen extends View {
         MazeSquareComponent nextPosition;
 
         // First position
-        currentPosition = mazeSquareComponents[0][0];
+        currentPosition = Store.mazeSquareComponents[0][0];
         currentPosition.alreadyVisited = true;
 
         do{
@@ -357,29 +337,29 @@ public class GameScreen extends View {
 
         // Check top
         if(mazeSquareComponent.lineIndex >= 1){
-            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex-1].alreadyVisited)){
-                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex-1]);
+            if(!(Store.mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex-1].alreadyVisited)){
+                squareBesides.add(Store.mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex-1]);
             }
         }
 
         // Check bottom
-        if(mazeSquareComponent.lineIndex < (currentLinesQuantity -1)){
-            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1].alreadyVisited)){
-                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1]);
+        if(mazeSquareComponent.lineIndex < (Store.currentLinesQuantity -1)){
+            if(!(Store.mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1].alreadyVisited)){
+                squareBesides.add(Store.mazeSquareComponents[mazeSquareComponent.columnIndex][mazeSquareComponent.lineIndex+1]);
             }
         }
 
         // Check right
-        if(mazeSquareComponent.columnIndex < (currentColumnsQuantity -1)){
-            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex].alreadyVisited)){
-                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex]);
+        if(mazeSquareComponent.columnIndex < (Store.currentColumnsQuantity -1)){
+            if(!(Store.mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex].alreadyVisited)){
+                squareBesides.add(Store.mazeSquareComponents[mazeSquareComponent.columnIndex+1][mazeSquareComponent.lineIndex]);
             }
         }
 
         // Check left only if it isn't the first column
         if(mazeSquareComponent.columnIndex>=1){
-            if(!(mazeSquareComponents[mazeSquareComponent.columnIndex-1][mazeSquareComponent.lineIndex].alreadyVisited)){
-                squareBesides.add(mazeSquareComponents[mazeSquareComponent.columnIndex-1][mazeSquareComponent.lineIndex]);
+            if(!(Store.mazeSquareComponents[mazeSquareComponent.columnIndex-1][mazeSquareComponent.lineIndex].alreadyVisited)){
+                squareBesides.add(Store.mazeSquareComponents[mazeSquareComponent.columnIndex-1][mazeSquareComponent.lineIndex]);
             }
         }
 
@@ -395,7 +375,7 @@ public class GameScreen extends View {
     }
 
     // Unitary element of the maze
-    private class MazeSquareComponent{
+    public class MazeSquareComponent{
 
         int columnIndex;
         int lineIndex;

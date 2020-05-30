@@ -2,9 +2,7 @@ package com.trabalho02.maze;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -24,14 +22,18 @@ import com.trabalho02.maze.view.GameScreen;
 public class MainActivity extends AppCompatActivity {
 
     private Vibrator vib;
-    private SensorManager sensorManager;
-    private Sensor giroscopio;
-    private SensorEventListener listener;
-    GameScreen gameScreen;
-    private static final int QUANTITY_SENSOR_READS = 20;
-    private int currentRead = 0;
 
-    int i=0;
+    private SensorManager sensorManager;
+
+    private Sensor giroscope;
+
+    private SensorEventListener sensorListener;
+
+    GameScreen gameScreen;
+
+    private static final int QUANTITY_SENSOR_READS = 5;
+
+    private int currentSensorRead = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,23 +41,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
         gameScreen = new GameScreen(MainActivity.this, null);
 
         vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        giroscopio = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        giroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        if (giroscopio == null) {
+        if (giroscope == null) {
             Toast.makeText(this, "O dispositivo não possui giroscópio!", Toast.LENGTH_LONG).show();
             finish();
         }
 
-        //alteracao
-        listener = new SensorEventListener() {
+        sensorListener = new SensorEventListener() {
 
             @Override
             public void onSensorChanged(SensorEvent event) {
-                if(currentRead>=QUANTITY_SENSOR_READS) {
+                if(currentSensorRead >=QUANTITY_SENSOR_READS) {
                     if(event.values[0] > -7f && event.values[0] < -3f){
                         gameScreen.move(GameScreen.MoveDirections.RIGHT);
                     }else if(event.values[0] < 7f && event.values[0] > 3f){
@@ -68,12 +70,9 @@ public class MainActivity extends AppCompatActivity {
                         gameScreen.move(GameScreen.MoveDirections.TOP);
                     }
 
-                    System.out.println(i);
-                    i++;
-
-                    currentRead = 0;
+                    currentSensorRead = 0;
                 } else{
-                    currentRead++;
+                    currentSensorRead++;
                 }
             }
 
@@ -89,14 +88,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume()
     {
         super.onResume();
-        sensorManager.registerListener(listener, giroscopio, 200000);
+        sensorManager.registerListener(sensorListener, giroscope, 200000);
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
-        sensorManager.unregisterListener(listener);
+        sensorManager.unregisterListener(sensorListener);
     }
 
     // Action bar button
