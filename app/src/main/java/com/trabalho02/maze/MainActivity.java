@@ -14,6 +14,7 @@ import android.os.Vibrator;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.trabalho02.maze.R.layout;
@@ -22,34 +23,28 @@ import com.trabalho02.maze.view.GameScreen;
 public class MainActivity extends AppCompatActivity {
 
     private Vibrator vib;
-
     private SensorManager sensorManager;
-
-    private Sensor giroscope;
-
+    private Sensor accelerometer;
     private SensorEventListener sensorListener;
 
     GameScreen gameScreen;
-
-    private static final int QUANTITY_SENSOR_READS = 5;
-
+    private static final int QUANTITY_SENSOR_READS = 10;
     private int currentSensorRead = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);   //flag to keep the scrren on
 
         gameScreen = new GameScreen(MainActivity.this, null);
 
         vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        giroscope = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        if (giroscope == null) {
-            Toast.makeText(this, "O dispositivo não possui giroscópio!", Toast.LENGTH_LONG).show();
+        if (accelerometer == null) {
+            Toast.makeText(this, "O dispositivo não possui acelerômetro!", Toast.LENGTH_LONG).show();
             finish();
         }
 
@@ -58,16 +53,32 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 if(currentSensorRead >=QUANTITY_SENSOR_READS) {
-                    if(event.values[0] > -7f && event.values[0] < -3f){
-                        gameScreen.move(GameScreen.MoveDirections.RIGHT);
-                    }else if(event.values[0] < 7f && event.values[0] > 3f){
-                        gameScreen.move(GameScreen.MoveDirections.LEFT);
+                    if(event.values[0] > -8f && event.values[0] < -5f){
+                        if(gameScreen.move(GameScreen.MoveDirections.RIGHT)){
+
+                        } else{
+                            vibrar();
+                        }
+                    }else if(event.values[0] < 8f && event.values[0] > 5f){
+                        if(gameScreen.move(GameScreen.MoveDirections.LEFT)){
+
+                        } else{
+                            vibrar();
+                        }
                     }
 
-                    if(event.values[1] < 7f && event.values[1] > 3f){
-                        gameScreen.move(GameScreen.MoveDirections.BOTTOM);
-                    }else if(event.values[1] > -7f && event.values[1] < -3f){
-                        gameScreen.move(GameScreen.MoveDirections.TOP);
+                    if(event.values[1] < 8f && event.values[1] > 5f){
+                        if(gameScreen.move(GameScreen.MoveDirections.BOTTOM)){
+
+                        } else{
+                            vibrar();
+                        }
+                    }else if(event.values[1] > -8f && event.values[1] < -5f){
+                        if(gameScreen.move(GameScreen.MoveDirections.TOP)){
+
+                        } else{
+                            vibrar();
+                        }
                     }
 
                     currentSensorRead = 0;
@@ -88,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume()
     {
         super.onResume();
-        sensorManager.registerListener(sensorListener, giroscope, 200000);
+        sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
@@ -121,15 +132,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void vibrar(View view)
+    public void vibrar()
     {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
-            vib.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            vib.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE));
         }
         else
         {
-            vib.vibrate(500);
+            vib.vibrate(300);
         }
     }
 }
