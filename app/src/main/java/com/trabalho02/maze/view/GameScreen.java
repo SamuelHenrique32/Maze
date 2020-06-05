@@ -18,8 +18,8 @@ import java.util.Stack;
 public class GameScreen extends View {
 
     // Constants
-    private static final int INITIAL_QUANTITY_OF_LINES = 8;
-    private static final int INITIAL_QUANTITY_OF_COLUMNS = 6;
+    private static final int INITIAL_QUANTITY_OF_LINES = 16;
+    private static final int INITIAL_QUANTITY_OF_COLUMNS = 8;
     private static final float SEPARATOR_SIZE = 8;
     private static final int INITIAL_LEVEL = 1;
     private static final int FINAL_LEVEL = 5;
@@ -45,10 +45,10 @@ public class GameScreen extends View {
         Store.separatorPaintStyle.setStrokeWidth(SEPARATOR_SIZE);
 
         Store.playerPaintStyle = new Paint();
-        Store.playerPaintStyle.setColor(Color.RED);
+        Store.playerPaintStyle.setColor(Color.BLUE);
 
         Store.exitPaintStyle = new Paint();
-        Store.exitPaintStyle.setColor(Color.BLUE);
+        Store.exitPaintStyle.setColor(Color.GREEN);
 
         Store.currentLevel = INITIAL_LEVEL;
         Store.currentLinesQuantity = INITIAL_QUANTITY_OF_LINES;

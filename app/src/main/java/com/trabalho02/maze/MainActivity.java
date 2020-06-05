@@ -2,6 +2,7 @@ package com.trabalho02.maze;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -30,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
     GameScreen gameScreen;
     private static final int QUANTITY_SENSOR_READS = 10;
     private int currentSensorRead = 0;
+
+    //contador criado para não causar uma impressão ao usuário final de vibração constante
+    private static final int QUANTITY_VIBRATIONS = 2;
+    private int currentVibrations = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,15 +70,13 @@ public class MainActivity extends AppCompatActivity {
                         } else{
                             vibrar();
                         }
-                    }
-
-                    if(event.values[1] < 8f && event.values[1] > 5f){
+                    }else if(event.values[1] > 8f && event.values[0] > -3f){
                         if(gameScreen.move(GameScreen.MoveDirections.BOTTOM)){
 
                         } else{
                             vibrar();
                         }
-                    }else if(event.values[1] > -8f && event.values[1] < -5f){
+                    }else if(event.values[1] < -8f && event.values[0] > -5f){
                         if(gameScreen.move(GameScreen.MoveDirections.TOP)){
 
                         } else{
@@ -110,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Action bar button
+    @SuppressLint("ResourceType")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(layout.menu, menu);
@@ -134,13 +138,19 @@ public class MainActivity extends AppCompatActivity {
 
     public void vibrar()
     {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        {
-            vib.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE));
-        }
-        else
-        {
-            vib.vibrate(300);
+        if(currentVibrations >= QUANTITY_VIBRATIONS) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            {
+                vib.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+            }
+            else
+            {
+                vib.vibrate(200);
+            }
+
+            currentVibrations = 0;
+        } else{
+            currentVibrations++;
         }
     }
 }
